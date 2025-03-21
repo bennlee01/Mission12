@@ -5,10 +5,12 @@ namespace Mission11.Data
 {
     public class BookstoreContext : DbContext
     {
+        // Constructor that passes options to the base DbContext class
         public BookstoreContext(DbContextOptions<BookstoreContext> options)
             : base(options)
         { }
 
-        public DbSet<Book> Books { get; set; }  // Table representing books in the database
+        // DbSet representing the 'Books' table in the database
+        public DbSet<Book> Books { get; set; }  
     }
 }

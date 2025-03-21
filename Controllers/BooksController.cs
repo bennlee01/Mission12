@@ -23,8 +23,10 @@ namespace Mission11.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Book>>> GetBooks(int page = 1, int pageSize = 5, string sortBy = "Title")
         {
+            // Start a query for all books in the database
             var query = _context.Books.AsQueryable();
 
+            // Apply sorting based on the 'sortBy' parameter
             query = sortBy.ToLower() switch
             {
                 "title" => query.OrderBy(b => b.Title),
@@ -36,23 +38,27 @@ namespace Mission11.Controllers
                 _ => query.OrderBy(b => b.Title),  // Default sorting by Title
             };
 
+            // Apply pagination (skip and take)
             query = query.Skip((page - 1) * pageSize).Take(pageSize);
 
-            return await query.ToListAsync();  // Ensure that all fields, including PageCount, are returned
+            // Return the list of books
+            return await query.ToListAsync();
         }
-
 
         // GET: api/books/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Book>> GetBook(int id)
         {
+            // Find the book by its ID
             var book = await _context.Books.FindAsync(id);
 
             if (book == null)
             {
+                // If the book doesn't exist, return 404
                 return NotFound();
             }
 
+            // Return the found book
             return book;
         }
 
@@ -60,9 +66,11 @@ namespace Mission11.Controllers
         [HttpPost]
         public async Task<ActionResult<Book>> PostBook(Book book)
         {
+            // Add the new book to the database
             _context.Books.Add(book);
             await _context.SaveChangesAsync();
 
+            // Return a created response with the new book
             return CreatedAtAction("GetBook", new { id = book.BookId }, book);
         }
 
@@ -72,17 +80,21 @@ namespace Mission11.Controllers
         {
             if (id != book.BookId)
             {
+                // If the ID in the URL doesn't match the book's ID, return a bad request
                 return BadRequest();
             }
 
+            // Mark the book as modified
             _context.Entry(book).State = EntityState.Modified;
 
             try
             {
+                // Save changes to the database
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
+                // If there's a concurrency issue or the book doesn't exist, return 404
                 if (!BookExists(id))
                 {
                     return NotFound();
@@ -93,6 +105,7 @@ namespace Mission11.Controllers
                 }
             }
 
+            // Return no content on successful update
             return NoContent();
         }
 
@@ -100,15 +113,19 @@ namespace Mission11.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBook(int id)
         {
+            // Find the book by ID
             var book = await _context.Books.FindAsync(id);
             if (book == null)
             {
+                // If the book doesn't exist, return 404
                 return NotFound();
             }
 
+            // Remove the book from the database
             _context.Books.Remove(book);
             await _context.SaveChangesAsync();
 
+            // Return no content on successful deletion
             return NoContent();
         }
 

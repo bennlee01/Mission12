@@ -159,3 +159,4 @@
 /Users/benjaminlee/RiderProjects/Mission11/Mission11/obj/Debug/net8.0/Mission11.pdb
 /Users/benjaminlee/RiderProjects/Mission11/Mission11/obj/Debug/net8.0/Mission11.genruntimeconfig.cache
 /Users/benjaminlee/RiderProjects/Mission11/Mission11/obj/Debug/net8.0/ref/Mission11.dll
+/Users/benjaminlee/RiderProjects/Mission11/Mission11/obj/Debug/net8.0/Mission11.sourcelink.json
