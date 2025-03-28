@@ -1,15 +1,20 @@
 import React from 'react';
-import './App.css'; // Custom styles for the app (if any)
-import BooksList from './components/BooksList'; // Import the BooksList component
-import 'bootstrap/dist/css/bootstrap.min.css';  // Import Bootstrap CSS for styling
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'; // Use Routes instead of Switch in React Router v6
+import 'bootstrap/dist/css/bootstrap.min.css'; // Import Bootstrap for styling
+import BooksList from './components/BooksList'; // Import Books List component
+import CartPage from './components/CartPage'; // Import Cart Page component
 
-function App() {
+const App = () => {
     return (
-        <div className="App">
-            {/* Render the BooksList component which displays the list of books */}
-            <BooksList />
-        </div>
+        <Router>
+            <div className="App">
+                <Routes> {/* Use Routes to handle routing in React Router v6 */}
+                    <Route path="/" element={<BooksList />} /> {/* Route to Books List page */}
+                    <Route path="/cart" element={<CartPage />} /> {/* Route to Cart page */}
+                </Routes>
+            </div>
+        </Router>
     );
-}
+};
 
-export default App; // Export the App component for use in other parts of the app
+export default App;
