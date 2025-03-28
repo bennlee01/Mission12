@@ -1,34 +1,48 @@
-// src/components/Book.js
 import React from 'react';
+import PropTypes from 'prop-types';
 
-// Functional component to display book details in a card format
 const Book = ({ book }) => {
+    // If no book data is provided, show a message
+    if (!book) return <p>No book data available.</p>;
+
+    // Fallback image URL in case the book does not have a cover image
+    const bookImage = book.imageUrl || 'https://via.placeholder.com/150'; // Placeholder image
+
     return (
-        <div className="card">
+        <div className="card mb-4">
+            {/* Book cover image with max height and cover style */}
+            <img src={bookImage} alt={`${book.title} cover`} className="card-img-top" style={{ maxHeight: '200px', objectFit: 'cover' }} />
             <div className="card-body">
-                {/* Book title displayed as a header */}
+                {/* Book details displayed inside the card */}
                 <h3 className="card-title">{book.title}</h3>
-
-                {/* Display author name */}
                 <p className="card-text"><strong>Author:</strong> {book.author}</p>
-
-                {/* Display publisher information */}
                 <p className="card-text"><strong>Publisher:</strong> {book.publisher}</p>
-
-                {/* Display ISBN number */}
                 <p className="card-text"><strong>ISBN:</strong> {book.isbn}</p>
-
-                {/* Display book category */}
                 <p className="card-text"><strong>Category:</strong> {book.category}</p>
-
-                {/* Display number of pages */}
                 <p className="card-text"><strong>Pages:</strong> {book.pageCount}</p>
-
-                {/* Display book price */}
                 <p className="card-text"><strong>Price:</strong> ${book.price}</p>
+                {/* Link to view more details about the book */}
+                <a href={`/books/${book.bookId}`} className="btn btn-primary">
+                    More Info
+                </a>
             </div>
         </div>
     );
 };
 
-export default Book; // Export Book component for use in other parts of the app
+// Prop validation to ensure the book object structure
+Book.propTypes = {
+    book: PropTypes.shape({
+        bookId: PropTypes.number.isRequired,  // Unique book ID
+        title: PropTypes.string.isRequired,   // Book title
+        author: PropTypes.string.isRequired,  // Book author
+        publisher: PropTypes.string.isRequired, // Publisher name
+        isbn: PropTypes.string.isRequired,    // ISBN number
+        category: PropTypes.string.isRequired, // Book category
+        pageCount: PropTypes.number.isRequired, // Total pages in the book
+        price: PropTypes.number.isRequired,    // Price of the book
+        imageUrl: PropTypes.string,            // Optional book cover image URL
+    }).isRequired,
+};
+
+export default Book;
