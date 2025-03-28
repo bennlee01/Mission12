@@ -4,6 +4,7 @@ using Mission11.Data;  // For BookstoreContext
 using Mission11.Models;  // For Book class
 using System.Linq;
 using System.Threading.Tasks;
+using System;
 
 namespace Mission11.Controllers
 {
@@ -19,30 +20,45 @@ namespace Mission11.Controllers
             _context = context;
         }
 
-        // GET: api/books?page=1&pageSize=5&sortBy=title
+        // GET: api/books?page=1&pageSize=5&sortBy=title&sortOrder=asc&category=biography
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Book>>> GetBooks(int page = 1, int pageSize = 5, string sortBy = "Title")
+        public async Task<ActionResult<IEnumerable<Book>>> GetBooks(int page = 1, int pageSize = 5, string sortBy = "Title", string sortOrder = "asc", string category = null)
         {
-            // Start a query for all books in the database
             var query = _context.Books.AsQueryable();
 
-            // Apply sorting based on the 'sortBy' parameter
-            query = sortBy.ToLower() switch
+            // Apply category filter if provided (case-insensitive)
+            if (!string.IsNullOrEmpty(category) && category.ToLower() != "all")
             {
-                "title" => query.OrderBy(b => b.Title),
-                "author" => query.OrderBy(b => b.Author),
-                "price" => query.OrderBy(b => b.Price),
-                "isbn" => query.OrderBy(b => b.ISBN),
-                "publisher" => query.OrderBy(b => b.Publisher),
-                "category" => query.OrderBy(b => b.Category),
-                _ => query.OrderBy(b => b.Title),  // Default sorting by Title
-            };
+                query = query.Where(b => b.Category.ToLower() == category.ToLower());
+            }
 
-            // Apply pagination (skip and take)
-            query = query.Skip((page - 1) * pageSize).Take(pageSize);
+            // Apply sorting logic
+            switch (sortBy.ToLower())
+            {
+                case "title":
+                    query = sortOrder == "asc" ? query.OrderBy(b => b.Title) : query.OrderByDescending(b => b.Title);
+                    break;
+                case "author":
+                    query = sortOrder == "asc" ? query.OrderBy(b => b.Author) : query.OrderByDescending(b => b.Author);
+                    break;
+                case "price":
+                    query = sortOrder == "asc" ? query.OrderBy(b => b.Price) : query.OrderByDescending(b => b.Price);
+                    break;
+                case "pagecount":
+                    query = sortOrder == "asc" ? query.OrderBy(b => b.PageCount) : query.OrderByDescending(b => b.PageCount);
+                    break;
+                default:
+                    query = query.OrderBy(b => b.Title);  // Default sorting by Title
+                    break;
+            }
 
-            // Return the list of books
-            return await query.ToListAsync();
+            // Apply pagination
+            var totalItems = await query.CountAsync(); // Get total number of items
+            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize); // Calculate total pages
+            var books = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            // Return paginated books along with total pages and total items for frontend use
+            return Ok(new { books, totalPages, totalItems });
         }
 
         // GET: api/books/5
