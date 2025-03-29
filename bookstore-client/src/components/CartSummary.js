@@ -1,111 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Table, Toast, ToastContainer } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom'; // For navigation
 
-const CartPage = () => {
-    // State to manage cart data from localStorage
-    const [cart, setCart] = useState(JSON.parse(localStorage.getItem('cart') || '[]'));
-    const [showToast, setShowToast] = useState(false);  // To control Toast visibility
-    const navigate = useNavigate();  // For navigating back to the main page (book list)
-
-    // Update localStorage whenever cart data changes
+const CartSummary = () => {
+    // Clear localStorage for debugging purposes - Remove this once you've tested it.
     useEffect(() => {
-        localStorage.setItem('cart', JSON.stringify(cart));
-    }, [cart]);
+        localStorage.removeItem('cart'); // Clears the cart in localStorage to ensure a fresh start
+    }, []); // Empty dependency array makes sure this only runs once when the component is first mounted.
 
-    // Get the total items and total price in the cart
+    // Initialize the cart state from localStorage or default to an empty array
+    const [cart, setCart] = useState(() => {
+        const storedCart = localStorage.getItem('cart');
+        return storedCart ? JSON.parse(storedCart) : []; // Default to empty array if no cart in localStorage
+    });
+
+    // Calculate the total items and total price from the cart state
     const getCartSummary = () => {
-        const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
-        const totalPrice = cart.reduce((acc, item) => acc + item.price * item.quantity, 0).toFixed(2);
+        const totalItems = cart.length ? cart.reduce((acc, item) => acc + item.quantity, 0) : 0;
+        const totalPrice = cart.length ? cart.reduce((acc, item) => acc + item.price * item.quantity, 0).toFixed(2) : '0.00';
         return { totalItems, totalPrice };
     };
 
-    // Remove an item from the cart
-    const removeFromCart = (bookId) => {
-        const updatedCart = cart.filter(item => item.bookId !== bookId);
-        setCart(updatedCart);
-    };
+    // Handle updating the cart dynamically when localStorage changes (for example, from another tab)
+    useEffect(() => {
+        const updateCartSummary = () => {
+            const updatedCart = JSON.parse(localStorage.getItem('cart') || '[]');
+            setCart(updatedCart); // Update state with the new cart data from localStorage
+        };
 
-    // Increase the quantity of a specific item
-    const increaseQuantity = (bookId) => {
-        const updatedCart = cart.map(item =>
-            item.bookId === bookId ? { ...item, quantity: item.quantity + 1 } : item
-        );
-        setCart(updatedCart);
-        setShowToast(true);  // Show toast when item quantity is increased
-    };
+        // Listen for changes in localStorage
+        window.addEventListener('storage', updateCartSummary);
 
-    // Decrease the quantity of a specific item
-    const decreaseQuantity = (bookId) => {
-        const updatedCart = cart.map(item =>
-            item.bookId === bookId && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item
-        );
-        setCart(updatedCart);
-        setShowToast(true);  // Show toast when item quantity is decreased
-    };
+        // Clean up listener when the component unmounts
+        return () => {
+            window.removeEventListener('storage', updateCartSummary);
+        };
+    }, []);
 
-    const { totalItems, totalPrice } = getCartSummary();  // Get summary of the cart
-
-    // Handle navigating back to the main shopping page
-    const handleContinueShopping = () => {
-        navigate('/');  // Navigate back to the main page (book list)
-    };
+    const { totalItems, totalPrice } = getCartSummary();
 
     return (
-        <div>
-            <h1>Your Cart</h1>
-            {totalItems === 0 ? (  // If cart is empty, show empty message
-                <div>
-                    <p>Your cart is empty! Continue shopping to add items to your cart.</p>
-                    <Button onClick={handleContinueShopping}>Continue Shopping</Button>
-                </div>
-            ) : (
-                <>
-                    {/* Table displaying cart items */}
-                    <Table striped bordered hover responsive>
-                        <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Price</th>
-                            <th>Quantity</th>
-                            <th>Subtotal</th>
-                            <th>Remove</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {cart.map((item) => (
-                            <tr key={item.bookId}>
-                                <td>{item.title}</td>
-                                <td>${item.price}</td>
-                                <td>
-                                    {/* Buttons to increase and decrease quantity */}
-                                    <Button onClick={() => decreaseQuantity(item.bookId)} className="mx-1">-</Button>
-                                    {item.quantity}
-                                    <Button onClick={() => increaseQuantity(item.bookId)} className="mx-1">+</Button>
-                                </td>
-                                <td>${(item.price * item.quantity).toFixed(2)}</td>
-                                <td>
-                                    <Button variant="danger" onClick={() => removeFromCart(item.bookId)}>
-                                        Remove
-                                    </Button>
-                                </td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </Table>
-                    <h3>Total: ${totalPrice}</h3>
-                    <Button onClick={handleContinueShopping}>Continue Shopping</Button>
-                </>
-            )}
-
-            {/* Toast notification that shows when item quantity is updated */}
-            <ToastContainer position="top-end">
-                <Toast show={showToast} onClose={() => setShowToast(false)} delay={3000} autohide>
-                    <Toast.Body>Item quantity updated in cart!</Toast.Body>
-                </Toast>
-            </ToastContainer>
+        <div className="cart-summary">
+            <h3>Cart Summary</h3>
+            <p>Total Items: {totalItems}</p>
+            <p>Total Price: ${totalPrice}</p>
         </div>
     );
 };
 
-export default CartPage;
+export default CartSummary;
