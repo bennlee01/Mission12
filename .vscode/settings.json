@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "undefined/subscriptions/7aec994b-74fd-42dc-93fb-e023914f23f2/resourceGroups/appsvc_windows_centralus/providers/Microsoft.Web/sites/Mission13-Lee-backend",
+    "appService.deploySubpath": "publish"
+}
